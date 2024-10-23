@@ -21,10 +21,11 @@ static void BM_rand_select(benchmark::State& state) {
 	state.SetComplexityN(state.range(0));
 }
 
+
 BENCHMARK(BM_rand_select)
 	->RangeMultiplier(2)
-	->Range(1<<10, 1<<20)
-	->Complexity();
+	->Range(1<<10, 1<<18)
+	->Complexity(benchmark::oN);
 
 BENCHMARK_MAIN();
 
