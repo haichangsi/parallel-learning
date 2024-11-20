@@ -1,2 +1,5 @@
 .vscode
 algorithms/ith_search/build
+*.o
+parallel/sudoku/openmp/bin/sudoku
+parallel/sudoku/openmp/challenge.pdf
