@@ -26,7 +26,7 @@
 #include "SudokuBoard.h"
 
 int found_sudokus = 0;
-const int MAX_DEPTH_FOR_TASKS = 2; // Adjust based on performance testing
+// const int MAX_DEPTH = 2;
 
 // Helper function to find an empty location on the board
 bool findEmptyLocation(CSudokuBoard *board, int &row, int &col) {
@@ -68,24 +68,7 @@ bool check_valid(const CSudokuBoard *sudoku, int x, int y, int value) {
 
 // Recursive function to solve the Sudoku puzzle
 void solve_sudoku(CSudokuBoard *sudoku, int depth) {
-    // int row = -1, col = -1;
-    // bool is_done = true;
     int field_size = sudoku->getFieldSize();
-
-    // // Find an empty cell
-    // for (int i = 0; i < field_size; i++) {
-    //     for (int j = 0; j < field_size; j++) {
-    //         if (sudoku->get(i, j) == 0) {
-    //             row = i;
-    //             col = j;
-    //             is_done = false;
-    //             break;
-    //         }
-    //     }
-    //     if (!is_done) {
-    //         break;
-    //     }
-    // }
 
     int row, col;
     if (!findEmptyLocation(sudoku, row, col)) {
@@ -94,29 +77,18 @@ void solve_sudoku(CSudokuBoard *sudoku, int depth) {
         {
             found_sudokus++;
 			sudoku->incrementSolutionCounter();
-            // std::cout << "Solution #" << found_sudokus << std::endl;
-            // sudoku->printBoard();
-            // std::cout << std::endl;
+            std::cout << "Solution #" << found_sudokus << std::endl;
+            sudoku->printBoard();
+            std::cout << std::endl;
         }
         return;
     }
 
-    // If no empty cell is found, we have a solution
-    // if (is_done) {
-    //     #pragma omp critical
-    //     {
-    //         found_sudokus++;
-    //         sudoku->incrementSolutionCounter();
-    //         // std::cout << "Solution " << found_sudokus << std::endl;
-    //         // sudoku->printBoard();
-    //     }
-    //     return;
-    // }
-
     // Try all possible values for the empty cell
     for (int value = 1; value <= field_size; value++) {
         if (check_valid(sudoku, row, col, value)) {
-			#pragma omp task firstprivate(row, col, value, sudoku) final (depth > 2)
+            // final keyword and a mix of them were also tested, check the report
+			#pragma omp task firstprivate(row, col, value, sudoku) if (depth <2)
 			{
 				CSudokuBoard *new_sudoku = new CSudokuBoard(*sudoku);
             	new_sudoku->set(row, col, value);
@@ -151,8 +123,8 @@ int main(int argc, char *argv[]) {
     }
 
     // Print the given Sudoku board template
-    // std::cout << "Given Sudoku template" << std::endl;
-    // sudoku->printBoard();
+    std::cout << "Given Sudoku template" << std::endl;
+    sudoku->printBoard();
 
     // Solve the Sudoku by finding all solutions
     t3 = omp_get_wtime();
@@ -173,29 +145,3 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
-
-
-
-
-
-/*
-		#pragma omp parallel num_threads(4)
-		{
-			#pragma omp master
-			printf("Threads:      %d\n", omp_get_num_threads());
-			#pragma omp single
-			{
-				printf("I am thread %d and I am creating tasks\n", omp_get_thread_num());
-				p=head;
-				while (p)
-				{
-					#pragma omp task firstprivate(p)
-					{
-						processwork(p);
-						printf("I am thread %d\n", omp_get_thread_num());
-					}
-					p = p->next;
-				}
-			}
-		}
-*/

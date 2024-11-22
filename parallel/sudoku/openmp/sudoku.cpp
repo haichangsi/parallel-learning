@@ -26,7 +26,7 @@
 #include "SudokuBoard.h"
 
 int found_sudokus = 0;
-const int MAX_LEVEL = 2;  // Adjust this value based on experimentation
+const int MAX_LEVEL = 2;
 
 // Helper function to find an empty location on the board
 bool findEmptyLocation(CSudokuBoard *board, int &row, int &col) {
@@ -41,7 +41,7 @@ bool findEmptyLocation(CSudokuBoard *board, int &row, int &col) {
 }
 
 // Helper function to check if a number can be placed in a given cell
-bool isSafe(CSudokuBoard *board, int row, int col, int num) {
+bool check_valid(CSudokuBoard *board, int row, int col, int num) {
     int field_size = board->getFieldSize();
     int block_size = board->getBlockSize();
 
@@ -72,16 +72,16 @@ void solveSudoku(CSudokuBoard *board, int level) {
         #pragma omp critical
         {
             found_sudokus++;
-            // std::cout << "Solution #" << found_sudokus << std::endl;
-            // board->printBoard();
-            // std::cout << std::endl;
+            std::cout << "Solution #" << found_sudokus << std::endl;
+            board->printBoard();
+            std::cout << std::endl;
         }
         return;
     }
 
     int field_size = board->getFieldSize();
     for (int num = 1; num <= field_size; num++) {
-        if (isSafe(board, row, col, num)) {
+        if (check_valid(board, row, col, num)) {
             // Set the number on the board
             board->set(row, col, num);
             if (level < MAX_LEVEL) {
@@ -97,14 +97,14 @@ void solveSudoku(CSudokuBoard *board, int level) {
             } else {
                 // Continue recursion without creating a new task
                 solveSudoku(board, level + 1);
-                // Backtrack
                 
             }
 			// Reset the cell for the next iteration - backtracking
 			board->set(row, col, 0);
         }
     }
-    // Wait for all child tasks to complete at this level
+    // Wait for all child tasks to complete at this level, unless we are
+    // at the maximum level
     if (level < MAX_LEVEL) {
         #pragma omp taskwait
     }
@@ -129,8 +129,8 @@ int main(int argc, char* argv[]) {
         }
 
         // Print the Sudoku board template
-        // std::cout << "Given Sudoku template" << std::endl;
-        // sudoku1->printBoard();
+        std::cout << "Given Sudoku template" << std::endl;
+        sudoku1->printBoard();
 
         // Solve the Sudoku by finding (and printing) all solutions
         t3 = omp_get_wtime();
@@ -154,30 +154,3 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
-
-
-
-
-
-
-/*
-		#pragma omp parallel num_threads(4)
-		{
-			#pragma omp master
-			printf("Threads:      %d\n", omp_get_num_threads());
-			#pragma omp single
-			{
-				printf("I am thread %d and I am creating tasks\n", omp_get_thread_num());
-				p=head;
-				while (p)
-				{
-					#pragma omp task firstprivate(p)
-					{
-						processwork(p);
-						printf("I am thread %d\n", omp_get_thread_num());
-					}
-					p = p->next;
-				}
-			}
-		}
-*/
